@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Dot Trick Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            width: 95%;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin-top: 20px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Unlimited Emails</h1>
+        <input type="text" id="emailInput" placeholder="Enter your email" />
+        <button onclick="generateAndDownload()">Generate and Download</button>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        function generateDotTrickEmails(baseEmail) {
+            const [localPart, domain] = baseEmail.split('@');
+
+            // Function to generate all combinations of dot placements
+            function generateCombinations(localPart) {
+                const n = localPart.length;
+                const combinations = [];
+
+                // Iterate over all possible placements of dots
+                for (let i = 1; i < (1 << (n - 1)); i++) {
+                    let newEmail = [];
+                    for (let j = 0; j < n; j++) {
+                        newEmail.push(localPart[j]);
+                        if (i & (1 << j)) {
+                            newEmail.push('.');
+                        }
+                    }
+                    combinations.push(newEmail.join(''));
+                }
+                return combinations;
+            }
+
+            const combinations = generateCombinations(localPart);
+            return combinations.map(combo => combo + '@' + domain);
+        }
+
+        function downloadFile(filename, content) {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function generateAndDownload() {
+            const emailInput = document.getElementById('emailInput').value;
+            const message = document.getElementById('message');
+            message.textContent = '';  // Clear previous message
+
+            // Simple email validation
+            if (!emailInput.includes('@')) {
+                message.textContent = 'Please enter a valid email address.';
+                return;
+            }
+
+            // Generate the email variations
+            const generatedEmails = generateDotTrickEmails(emailInput);
+            
+            if (generatedEmails.length === 0) {
+                message.textContent = 'No valid email variations could be generated.';
+                return;
+            }
+
+            // Convert the array of emails into a text string
+            const emailListContent = generatedEmails.join('\n');
+
+            // Ask the user for a filename and download the email list as a .txt file
+            const filename = prompt('Enter the name of the file:', 'emails.txt') || 'emails.txt';
+            downloadFile(filename, emailListContent);
+        }
+    </script>
+
+</body>
+</html>
