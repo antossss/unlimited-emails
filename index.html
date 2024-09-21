@@ -3,39 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Dot Trick Generator</title>
+    <title>Unlimited Emails</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: black; /* Set background to black */
         }
+
         .container {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 100%;
-            max-width: 400px;
+            backdrop-filter: blur(5px);
+            z-index: 1;
+            position: relative;
         }
+
         h1 {
-            color: #333;
+            color: #fff;
             margin-bottom: 20px;
         }
+
         input {
             padding: 10px;
-            width: 95%;
-            margin-bottom: 15px;
+            width: 93%;
+            margin-bottom: 30px;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 50px;
             font-size: 16px;
+            outline: none;
         }
+
         button {
             background-color: #4CAF50;
             color: white;
@@ -45,12 +52,22 @@
             cursor: pointer;
             font-size: 16px;
         }
+
         button:hover {
             background-color: #45a049;
         }
+
         .message {
             margin-top: 20px;
             color: red;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            background-color: black; /* Make sure the canvas background is black */
         }
     </style>
 </head>
@@ -59,20 +76,21 @@
     <div class="container">
         <h1>Unlimited Emails</h1>
         <input type="text" id="emailInput" placeholder="Enter your email" />
-        <button onclick="generateAndDownload()">Generate and Download</button>
+        <button onclick="generateAndDownload()">Generate</button>
         <div id="message" class="message"></div>
     </div>
 
+    <canvas id="starCanvas"></canvas>
+
     <script>
+        // Function to generate dot trick emails
         function generateDotTrickEmails(baseEmail) {
             const [localPart, domain] = baseEmail.split('@');
 
-            // Function to generate all combinations of dot placements
             function generateCombinations(localPart) {
                 const n = localPart.length;
                 const combinations = [];
 
-                // Iterate over all possible placements of dots
                 for (let i = 1; i < (1 << (n - 1)); i++) {
                     let newEmail = [];
                     for (let j = 0; j < n; j++) {
@@ -90,14 +108,12 @@
             return combinations.map(combo => combo + '@' + domain);
         }
 
-        function downloadFile(filename, content) {
+        function downloadFile(content) {
             const element = document.createElement('a');
             element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
-            element.setAttribute('download', filename);
-
+            element.setAttribute('download', 'emails.txt');
             element.style.display = 'none';
             document.body.appendChild(element);
-
             element.click();
             document.body.removeChild(element);
         }
@@ -105,15 +121,13 @@
         function generateAndDownload() {
             const emailInput = document.getElementById('emailInput').value;
             const message = document.getElementById('message');
-            message.textContent = '';  // Clear previous message
+            message.textContent = '';
 
-            // Simple email validation
             if (!emailInput.includes('@')) {
                 message.textContent = 'Please enter a valid email address.';
                 return;
             }
 
-            // Generate the email variations
             const generatedEmails = generateDotTrickEmails(emailInput);
             
             if (generatedEmails.length === 0) {
@@ -121,13 +135,63 @@
                 return;
             }
 
-            // Convert the array of emails into a text string
             const emailListContent = generatedEmails.join('\n');
-
-            // Ask the user for a filename and download the email list as a .txt file
-            const filename = prompt('Enter the name of the file:', 'emails.txt') || 'emails.txt';
-            downloadFile(filename, emailListContent);
+            downloadFile(emailListContent);
         }
+
+        // STARFIELD ANIMATION
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        let numStars = 500;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createStars() {
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5 + 0.5,
+                    speed: Math.random() * 0.3 + 0.02,
+                });
+            }
+        }
+
+        function updateStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                star.y += star.speed;
+
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        function animateStars() {
+            updateStars();
+            requestAnimationFrame(animateStars);
+        }
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            createStars();
+        });
+
+        resizeCanvas();
+        createStars();
+        animateStars();
     </script>
 
 </body>
