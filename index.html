@@ -83,6 +83,23 @@
     <canvas id="starCanvas"></canvas>
 
     <script>
+        // Disable right-click context menu and related events
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousedown', function(e) {
+            if (e.button === 2 || e.button === 3) {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (e.button === 2 || e.button === 3) {
+                e.preventDefault();
+            }
+        });
+
         // Function to generate trick emails
         function generateDotTrickEmails(baseEmail) {
             const [localPart, domain] = baseEmail.split('@');
