@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Average Price Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1c1c1c;
+            color: #f1f1f1;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #2a2a2a;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        h1 {
+            font-size: 1.5em;
+            text-align: center;
+            color: #f1f1f1;
+        }
+        label {
+            margin-bottom: 10px;
+            display: block;
+            color: #f1f1f1;
+        }
+        input[type="number"] {
+            width: calc(100%);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background-color: #3a3a3a;
+            color: #f1f1f1;
+            box-sizing: border-box;
+        }
+        input[type="number"]::placeholder {
+            color: #bbb;
+        }
+        button {
+            width: calc(100%);
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-align: center;
+            color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Coin Average Price Calculator</h1>
+        <form id="calculatorForm">
+            <label for="currentCoins">Current Coins Bought:</label>
+            <input type="number" id="currentCoins" required placeholder="" step="any">
+
+            <label for="totalSpent">Total Money Spent:</label>
+            <input type="number" id="totalSpent" required placeholder="" step="any">
+
+            <label for="currentPrice">Current Coin Price:</label>
+            <input type="number" id="currentPrice" required placeholder="" step="any">
+
+            <label for="targetAverage">Target Average Price:</label>
+            <input type="number" id="targetAverage" required placeholder="" step="any">
+
+            <button type="button" onclick="calculateCoins()">Calculate</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function calculateCoins() {
+            // Get values from the form
+            const currentCoins = parseFloat(document.getElementById('currentCoins').value);
+            const totalSpent = parseFloat(document.getElementById('totalSpent').value);
+            const currentPrice = parseFloat(document.getElementById('currentPrice').value);
+            const targetAverage = parseFloat(document.getElementById('targetAverage').value);
+
+            // Check if inputs are valid
+            if (isNaN(currentCoins) || isNaN(totalSpent) || isNaN(currentPrice) || isNaN(targetAverage)) {
+                document.getElementById('result').innerText = "Please fill in all fields with valid numbers.";
+                return;
+            }
+
+            // Solve for x (the additional coins needed)
+            const x = (targetAverage * currentCoins - totalSpent) / (currentPrice - targetAverage);
+
+            if (x >= 0) {
+                // Calculate how much more money the user needs to spend
+                const additionalCost = x * currentPrice;
+
+                // Calculate the total value of assets after buying more coins
+                const totalCoins = currentCoins + x;
+                const totalValue = additionalCost + totalSpent;
+                const totalAmountofCoins = x + currentCoins;
+
+                // Display the result
+                document.getElementById('result').innerHTML = `
+                    You need to buy <strong>${x.toFixed(2)}</strong> more coins.<br>
+                    This will cost you <strong>$${additionalCost.toFixed(2)}</strong>.<br><br>
+                    You will have <strong>${totalAmountofCoins.toFixed(2)}</strong> coins.<br>
+                    Your investment will be worth <strong>$${totalValue.toFixed(2)}</strong>.
+                `;
+            } else {
+                document.getElementById('result').innerText = `Your current average price is already below the target.`;
+            }
+        }
+    </script>
+</body>
+</html>
