@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Position Sizing Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #333;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px;
+            padding: 30px;
+            background-color: #f4f4f4;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        h1 {
+            font-weight: 700;
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        p {
+            font-weight: 400;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        form {
+            display: grid;
+            gap: 20px;
+        }
+        label {
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #444;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+            outline: none;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        #results {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            color: #333;
+            line-height: 1.6;
+        }
+        #results strong {
+            color: #4CAF50;
+        }
+        @media (max-width: 480px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            p {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto Position Sizing Calculator</h1>
+        <p>Calculate your optimal leverage and position size based on your risk parameters for BTC/USDT trading.</p>
+
+        <form>
+            <label for="risk">Risk Amount (USDT):</label>
+            <input type="number" id="risk" name="risk" step="any" min="0" placeholder="e.g., 100" required>
+
+            <label for="entry">Entry Price (USDT):</label>
+            <input type="number" id="entry" name="entry" step="any" min="0" placeholder="e.g., 50000" required>
+
+            <label for="stoploss">Stoploss Price (USDT):</label>
+            <input type="number" id="stoploss" name="stoploss" step="any" min="0" placeholder="e.g., 49000" required>
+
+            <label for="takeprofit">Take Profit Price (USDT):</label>
+            <input type="number" id="takeprofit" name="takeprofit" step="any" min="0" placeholder="e.g., 52000" required>
+
+            <button type="button" onclick="calculate()">Calculate</button>
+        </form>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function calculate() {
+            const risk = parseFloat(document.getElementById('risk').value);
+            const entry = parseFloat(document.getElementById('entry').value);
+            const stoploss = parseFloat(document.getElementById('stoploss').value);
+            const takeprofit = parseFloat(document.getElementById('takeprofit').value);
+            const resultsDiv = document.getElementById('results');
+
+            if (isNaN(risk) || isNaN(entry) || isNaN(stoploss) || isNaN(takeprofit)) {
+                resultsDiv.innerHTML = 'Please enter valid numbers for all fields.';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            if (risk <= 0 || entry <= 0 || stoploss <= 0 || takeprofit <= 0) {
+                resultsDiv.innerHTML = 'All values must be positive.';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            if (takeprofit === entry) {
+                resultsDiv.innerHTML = 'Take profit price must differ from entry price.';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+
+            let positionType, leverage, positionSize, potentialProfit;
+
+            if (takeprofit > entry) {
+                positionType = 'Long';
+                if (stoploss >= entry) {
+                    resultsDiv.innerHTML = 'For a long position, stoploss must be below entry price.';
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+                leverage = entry / (entry - stoploss);
+                const margin = risk;
+                positionSize = (margin * leverage) / entry;
+                potentialProfit = positionSize * (takeprofit - entry);
+            } else {
+                positionType = 'Short';
+                if (stoploss <= entry) {
+                    resultsDiv.innerHTML = 'For a short position, stoploss must be above entry price.';
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+                leverage = entry / (stoploss - entry);
+                const margin = risk;
+                positionSize = (margin * leverage) / entry;
+                potentialProfit = positionSize * (entry - takeprofit);
+            }
+
+            resultsDiv.innerHTML = `
+                <strong>Position Type:</strong> ${positionType}<br>
+                <strong>Suggested Leverage:</strong> ${leverage.toFixed(2)}x<br>
+                <strong>Position Size:</strong> ${positionSize.toFixed(4)} BTC<br>
+                <strong>Liquidation Price:</strong> ${stoploss.toFixed(2)} USDT<br>
+                <strong>Potential Loss if Stoploss Hit:</strong> ${risk.toFixed(2)} USDT<br>
+                <strong>Potential Profit if Take Profit Hit:</strong> ${potentialProfit.toFixed(2)} USDT
+            `;
+            resultsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
