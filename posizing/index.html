@@ -3,191 +3,852 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Position Sizing Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Crypto Position Sizing Calculator | Advanced Trading Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #333;
-            color: #fff;
+        :root {
+            --primary: #00ff9d;
+            --primary-dark: #00cc7a;
+            --secondary: #7b61ff;
+            --dark-bg: #0a0a0f;
+            --dark-card: #11111f;
+            --darker-card: #0c0c16;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0c0;
+            --border-color: #25253a;
+            --shadow-glow: 0 0 25px rgba(0, 255, 157, 0.2);
+            --gradient: linear-gradient(135deg, #00ff9d 0%, #7b61ff 50%, #ff4d8d 100%);
+            --gradient-secondary: linear-gradient(135deg, #7b61ff 0%, #00ccff 100%);
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 600px;
-            margin: 40px;
-            padding: 30px;
-            background-color: #f4f4f4;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            color: #333;
-        }
-        h1 {
-            font-weight: 700;
-            color: #4CAF50;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        p {
-            font-weight: 400;
-            text-align: center;
-            margin-bottom: 30px;
-            color: #666;
-        }
-        form {
-            display: grid;
-            gap: 20px;
-        }
-        label {
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: #444;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
             box-sizing: border-box;
-            transition: border-color 0.3s, box-shadow 0.3s;
         }
-        input:focus {
-            border-color: #4CAF50;
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-            outline: none;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(123, 97, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 157, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(255, 77, 141, 0.05) 0%, transparent 30%);
+            position: relative;
         }
-        button {
-            padding: 12px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 700;
-            transition: background-color 0.3s, transform 0.2s;
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, var(--dark-bg) 1px, transparent 1px) 0 0 / 20px 20px,
+                linear-gradient(0deg, var(--dark-bg) 1px, transparent 1px) 0 0 / 20px 20px;
+            opacity: 0.15;
+            z-index: -1;
         }
-        button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-        }
-        #results {
-            margin-top: 25px;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: none;
-            color: #333;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 20px;
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.2rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 30px;
             line-height: 1.6;
         }
-        #results strong {
-            color: #4CAF50;
+
+        /* Calculator Card */
+        .calculator-card {
+            background-color: var(--dark-card);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: var(--shadow-glow);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        @media (max-width: 480px) {
+
+        .calculator-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 255, 157, 0.25);
+        }
+
+        .calculator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+            background: rgba(0, 255, 157, 0.1);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 576px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group label i {
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            background-color: var(--darker-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.15);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Button */
+        .calculate-btn {
+            width: 100%;
+            padding: 20px;
+            background: var(--gradient);
+            border: none;
+            border-radius: 14px;
+            color: #000;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 255, 157, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Results Card */
+        .results-card {
+            background-color: var(--dark-card);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: var(--shadow-glow);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-secondary);
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .position-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .position-indicator.long {
+            background-color: rgba(0, 255, 157, 0.15);
+            color: var(--primary);
+        }
+
+        .position-indicator.short {
+            background-color: rgba(255, 77, 141, 0.15);
+            color: #ff4d8d;
+        }
+
+        .results-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+        }
+
+        .result-label i {
+            font-size: 1.2rem;
+            width: 36px;
+            height: 36px;
+            background: rgba(123, 97, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary);
+        }
+
+        .result-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .result-value.highlight {
+            color: var(--primary);
+            font-size: 1.6rem;
+        }
+
+        .profit-loss {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .pl-box {
+            background: var(--darker-card);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .pl-box.loss {
+            border-color: rgba(255, 77, 141, 0.3);
+        }
+
+        .pl-box.profit {
+            border-color: rgba(0, 255, 157, 0.3);
+        }
+
+        .pl-title {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .pl-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .pl-value.loss {
+            color: #ff4d8d;
+        }
+
+        .pl-value.profit {
+            color: var(--primary);
+        }
+
+        /* Risk Visualizer */
+        .risk-visualizer {
+            margin-top: 30px;
+            padding: 25px;
+            background: var(--darker-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .risk-title {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .risk-bar-container {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .risk-bar {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 6px;
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .risk-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        .footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Animation for results */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
             .container {
-                margin: 20px;
-                padding: 20px;
+                padding: 15px;
+                gap: 25px;
             }
-            h1 {
-                font-size: 1.5em;
+            
+            .header h1 {
+                font-size: 2.5rem;
             }
-            p {
-                font-size: 0.9em;
+            
+            .calculator-card, .results-card {
+                padding: 30px 25px;
             }
+            
+            .profit-loss {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card-title {
+                font-size: 1.5rem;
+            }
+            
+            .calculator-card, .results-card {
+                padding: 25px 20px;
+            }
+            
+            .form-grid {
+                gap: 20px;
+            }
+        }
+
+        /* Theme toggle (optional) */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--dark-card);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            z-index: 100;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--darker-card);
+            transform: rotate(30deg);
         }
     </style>
 </head>
 <body>
+    <div class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
     <div class="container">
-        <h1>Crypto Position Sizing Calculator</h1>
-        <p>Calculate your optimal leverage and position size based on your risk parameters for BTC/USDT trading.</p>
+        <div class="header">
+            <h1>CRYPTO POSITION SIZING CALCULATOR</h1>
+            <p>Optimize your trading strategy with precise leverage, position sizing, and risk management calculations for BTC/USDT trading.</p>
+        </div>
 
-        <form>
-            <label for="risk">Risk Amount (USDT):</label>
-            <input type="number" id="risk" name="risk" step="any" min="0" placeholder="e.g., 100" required>
+        <div class="calculator-card">
+            <h2 class="card-title">
+                <i class="fas fa-calculator"></i> Calculator Parameters
+            </h2>
+            
+            <form id="calculatorForm">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="risk">
+                            <i class="fas fa-shield-alt"></i> Risk Amount
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="risk" step="any" min="0" placeholder="100" required>
+                            <div class="input-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="input-suffix">USDT</div>
+                        </div>
+                    </div>
 
-            <label for="entry">Entry Price (USDT):</label>
-            <input type="number" id="entry" name="entry" step="any" min="0" placeholder="e.g., 50000" required>
+                    <div class="input-group">
+                        <label for="entry">
+                            <i class="fas fa-arrow-up-right"></i> Entry Price
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="entry" step="any" min="0" placeholder="50000" required>
+                            <div class="input-icon">
+                                <i class="fas fa-tag"></i>
+                            </div>
+                            <div class="input-suffix">USDT</div>
+                        </div>
+                    </div>
 
-            <label for="stoploss">Stoploss Price (USDT):</label>
-            <input type="number" id="stoploss" name="stoploss" step="any" min="0" placeholder="e.g., 49000" required>
+                    <div class="input-group">
+                        <label for="stoploss">
+                            <i class="fas fa-arrow-down"></i> Stoploss Price
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="stoploss" step="any" min="0" placeholder="49000" required>
+                            <div class="input-icon">
+                                <i class="fas fa-hand-paper"></i>
+                            </div>
+                            <div class="input-suffix">USDT</div>
+                        </div>
+                    </div>
 
-            <label for="takeprofit">Take Profit Price (USDT):</label>
-            <input type="number" id="takeprofit" name="takeprofit" step="any" min="0" placeholder="e.g., 52000" required>
+                    <div class="input-group">
+                        <label for="takeprofit">
+                            <i class="fas fa-bullseye"></i> Take Profit Price
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="takeprofit" step="any" min="0" placeholder="52000" required>
+                            <div class="input-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="input-suffix">USDT</div>
+                        </div>
+                    </div>
+                </div>
 
-            <button type="button" onclick="calculate()">Calculate</button>
-        </form>
+                <button type="button" class="calculate-btn" onclick="calculate()">
+                    <i class="fas fa-chart-bar"></i> Calculate Position
+                </button>
+            </form>
 
-        <div id="results"></div>
+            <div class="risk-visualizer">
+                <h3 class="risk-title">
+                    <i class="fas fa-exclamation-triangle"></i> Risk Level
+                </h3>
+                <div class="risk-bar-container">
+                    <div class="risk-bar" id="riskBar"></div>
+                </div>
+                <div class="risk-labels">
+                    <span>Low Risk</span>
+                    <span>Moderate</span>
+                    <span>High Risk</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-card" id="resultsCard">
+            <div class="results-header">
+                <h2 class="card-title">
+                    <i class="fas fa-chart-pie"></i> Position Analysis
+                </h2>
+                <div class="position-indicator long" id="positionIndicator">LONG</div>
+            </div>
+
+            <div class="results-content" id="resultsContent">
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-arrows-alt-h"></i>
+                        <span>Position Size</span>
+                    </div>
+                    <div class="result-value" id="positionSize">0.0000 BTC</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Suggested Leverage</span>
+                    </div>
+                    <div class="result-value highlight" id="leverage">0.00x</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-skull-crossbones"></i>
+                        <span>Liquidation Price</span>
+                    </div>
+                    <div class="result-value" id="liquidationPrice">0.00 USDT</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Risk/Reward Ratio</span>
+                    </div>
+                    <div class="result-value" id="riskReward">0.00</div>
+                </div>
+
+                <div class="profit-loss">
+                    <div class="pl-box loss">
+                        <div class="pl-title">
+                            <i class="fas fa-exclamation-circle"></i> Potential Loss
+                        </div>
+                        <div class="pl-value loss" id="potentialLoss">0.00 USDT</div>
+                    </div>
+
+                    <div class="pl-box profit">
+                        <div class="pl-title">
+                            <i class="fas fa-trophy"></i> Potential Profit
+                        </div>
+                        <div class="pl-value profit" id="potentialProfit">0.00 USDT</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2023 Crypto Position Sizing Calculator | Designed for professional traders | 
+                <a href="#">Risk Disclaimer</a> | <a href="#">How to Use</a>
+            </p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">
+                <i class="fas fa-exclamation-triangle"></i> Trading cryptocurrencies involves significant risk. Only trade with capital you can afford to lose.
+            </p>
+        </div>
     </div>
 
     <script>
+        // Set default values for demonstration
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('risk').value = 100;
+            document.getElementById('entry').value = 50000;
+            document.getElementById('stoploss').value = 49000;
+            document.getElementById('takeprofit').value = 52000;
+            
+            // Calculate with default values
+            calculate();
+        });
+
         function calculate() {
             const risk = parseFloat(document.getElementById('risk').value);
             const entry = parseFloat(document.getElementById('entry').value);
             const stoploss = parseFloat(document.getElementById('stoploss').value);
             const takeprofit = parseFloat(document.getElementById('takeprofit').value);
-            const resultsDiv = document.getElementById('results');
-
+            
+            const resultsContent = document.getElementById('resultsContent');
+            const riskBar = document.getElementById('riskBar');
+            const positionIndicator = document.getElementById('positionIndicator');
+            
+            // Validation
             if (isNaN(risk) || isNaN(entry) || isNaN(stoploss) || isNaN(takeprofit)) {
-                resultsDiv.innerHTML = 'Please enter valid numbers for all fields.';
-                resultsDiv.style.display = 'block';
+                showError('Please enter valid numbers for all fields.');
                 return;
             }
+            
             if (risk <= 0 || entry <= 0 || stoploss <= 0 || takeprofit <= 0) {
-                resultsDiv.innerHTML = 'All values must be positive.';
-                resultsDiv.style.display = 'block';
+                showError('All values must be positive.');
                 return;
             }
+            
             if (takeprofit === entry) {
-                resultsDiv.innerHTML = 'Take profit price must differ from entry price.';
-                resultsDiv.style.display = 'block';
+                showError('Take profit price must differ from entry price.');
                 return;
             }
-
-            let positionType, leverage, positionSize, potentialProfit;
-
+            
+            let positionType, leverage, positionSize, potentialProfit, riskReward;
+            
             if (takeprofit > entry) {
-                positionType = 'Long';
+                positionType = 'LONG';
                 if (stoploss >= entry) {
-                    resultsDiv.innerHTML = 'For a long position, stoploss must be below entry price.';
-                    resultsDiv.style.display = 'block';
+                    showError('For a long position, stoploss must be below entry price.');
                     return;
                 }
                 leverage = entry / (entry - stoploss);
                 const margin = risk;
                 positionSize = (margin * leverage) / entry;
                 potentialProfit = positionSize * (takeprofit - entry);
+                riskReward = ((takeprofit - entry) / (entry - stoploss)).toFixed(2);
             } else {
-                positionType = 'Short';
+                positionType = 'SHORT';
                 if (stoploss <= entry) {
-                    resultsDiv.innerHTML = 'For a short position, stoploss must be above entry price.';
-                    resultsDiv.style.display = 'block';
+                    showError('For a short position, stoploss must be above entry price.');
                     return;
                 }
                 leverage = entry / (stoploss - entry);
                 const margin = risk;
                 positionSize = (margin * leverage) / entry;
                 potentialProfit = positionSize * (entry - takeprofit);
+                riskReward = ((entry - takeprofit) / (stoploss - entry)).toFixed(2);
             }
-
-            resultsDiv.innerHTML = `
-                <strong>Position Type:</strong> ${positionType}<br>
-                <strong>Suggested Leverage:</strong> ${leverage.toFixed(2)}x<br>
-                <strong>Position Size:</strong> ${positionSize.toFixed(4)} BTC<br>
-                <strong>Liquidation Price:</strong> ${stoploss.toFixed(2)} USDT<br>
-                <strong>Potential Loss if Stoploss Hit:</strong> ${risk.toFixed(2)} USDT<br>
-                <strong>Potential Profit if Take Profit Hit:</strong> ${potentialProfit.toFixed(2)} USDT
-            `;
-            resultsDiv.style.display = 'block';
+            
+            // Update UI with results
+            document.getElementById('positionSize').textContent = positionSize.toFixed(4) + ' BTC';
+            document.getElementById('leverage').textContent = leverage.toFixed(2) + 'x';
+            document.getElementById('liquidationPrice').textContent = stoploss.toFixed(2) + ' USDT';
+            document.getElementById('riskReward').textContent = riskReward;
+            document.getElementById('potentialLoss').textContent = risk.toFixed(2) + ' USDT';
+            document.getElementById('potentialProfit').textContent = potentialProfit.toFixed(2) + ' USDT';
+            
+            // Update position indicator
+            positionIndicator.textContent = positionType;
+            positionIndicator.className = `position-indicator ${positionType.toLowerCase()}`;
+            
+            // Calculate risk level (simplified based on leverage)
+            let riskLevel = Math.min(100, leverage * 10);
+            riskBar.style.width = riskLevel + '%';
+            
+            // Animate results
+            resultsContent.classList.remove('fade-in');
+            void resultsContent.offsetWidth; // Trigger reflow
+            resultsContent.classList.add('fade-in');
+            
+            // Show results card if hidden
+            document.getElementById('resultsCard').style.display = 'flex';
         }
+        
+        function showError(message) {
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff4d8d; margin-bottom: 20px;"></i>
+                    <h3 style="color: #ff4d8d; margin-bottom: 15px;">Calculation Error</h3>
+                    <p style="color: var(--text-secondary);">${message}</p>
+                </div>
+            `;
+            resultsContent.classList.remove('fade-in');
+            void resultsContent.offsetWidth;
+            resultsContent.classList.add('fade-in');
+        }
+        
+        // Theme toggle functionality (optional light mode)
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            
+            if (icon.classList.contains('fa-moon')) {
+                // Switch to light theme
+                document.documentElement.style.setProperty('--dark-bg', '#f8f9fa');
+                document.documentElement.style.setProperty('--dark-card', '#ffffff');
+                document.documentElement.style.setProperty('--darker-card', '#f1f3f5');
+                document.documentElement.style.setProperty('--text-primary', '#212529');
+                document.documentElement.style.setProperty('--text-secondary', '#6c757d');
+                document.documentElement.style.setProperty('--border-color', '#dee2e6');
+                document.documentElement.style.setProperty('--shadow-glow', '0 0 20px rgba(0, 0, 0, 0.1)');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                // Switch back to dark theme
+                document.documentElement.style.setProperty('--dark-bg', '#0a0a0f');
+                document.documentElement.style.setProperty('--dark-card', '#11111f');
+                document.documentElement.style.setProperty('--darker-card', '#0c0c16');
+                document.documentElement.style.setProperty('--text-primary', '#ffffff');
+                document.documentElement.style.setProperty('--text-secondary', '#a0a0c0');
+                document.documentElement.style.setProperty('--border-color', '#25253a');
+                document.documentElement.style.setProperty('--shadow-glow', '0 0 25px rgba(0, 255, 157, 0.2)');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
     </script>
 </body>
 </html>
