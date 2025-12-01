@@ -20,6 +20,8 @@
             --shadow-glow: 0 0 25px rgba(0, 255, 157, 0.2);
             --gradient: linear-gradient(135deg, #00ff9d 0%, #7b61ff 50%, #ff4d8d 100%);
             --gradient-secondary: linear-gradient(135deg, #7b61ff 0%, #00ccff 100%);
+            --danger: #ff4d8d;
+            --warning: #ffcc00;
         }
 
         * {
@@ -238,6 +240,22 @@
             font-size: 0.9rem;
         }
 
+        /* Max Leverage Specific Styles */
+        .max-leverage-info {
+            background: rgba(123, 97, 255, 0.1);
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            border-radius: 0 10px 10px 0;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .max-leverage-info i {
+            color: var(--secondary);
+            margin-right: 8px;
+        }
+
         /* Button */
         .calculate-btn {
             width: 100%;
@@ -316,7 +334,7 @@
 
         .position-indicator.short {
             background-color: rgba(255, 77, 141, 0.15);
-            color: #ff4d8d;
+            color: var(--danger);
         }
 
         .results-content {
@@ -369,6 +387,48 @@
             font-size: 1.6rem;
         }
 
+        .result-value.warning {
+            color: var(--warning);
+        }
+
+        .leverage-details {
+            margin-top: 25px;
+            padding: 20px;
+            background: var(--darker-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .leverage-details h4 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .leverage-details h4 i {
+            color: var(--secondary);
+        }
+
+        .leverage-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .leverage-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .leverage-stat:last-child {
+            border-bottom: none;
+        }
+
         .profit-loss {
             margin-top: 30px;
             display: grid;
@@ -409,53 +469,11 @@
         }
 
         .pl-value.loss {
-            color: #ff4d8d;
+            color: var(--danger);
         }
 
         .pl-value.profit {
             color: var(--primary);
-        }
-
-        /* Risk Visualizer */
-        .risk-visualizer {
-            margin-top: 30px;
-            padding: 25px;
-            background: var(--darker-card);
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-        }
-
-        .risk-title {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .risk-bar-container {
-            height: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .risk-bar {
-            height: 100%;
-            background: var(--gradient);
-            border-radius: 6px;
-            width: 0%;
-            transition: width 1s ease;
-        }
-
-        .risk-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
         }
 
         /* Footer */
@@ -509,7 +527,7 @@
                 padding: 30px 25px;
             }
             
-            .profit-loss {
+            .profit-loss, .leverage-stats {
                 grid-template-columns: 1fr;
             }
         }
@@ -532,7 +550,7 @@
             }
         }
 
-        /* Theme toggle (optional) */
+        /* Theme toggle */
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -627,26 +645,28 @@
                             <div class="input-suffix">USDT</div>
                         </div>
                     </div>
+
+                    <div class="input-group">
+                        <label for="maxLeverage">
+                            <i class="fas fa-expand-arrows-alt"></i> Max Leverage
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="maxLeverage" step="any" min="0" placeholder="0" value="0">
+                            <div class="input-icon">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <div class="input-suffix">x (0 = unlimited)</div>
+                        </div>
+                        <div class="max-leverage-info">
+                            <i class="fas fa-info-circle"></i> Set maximum leverage (0 means unlimited)
+                        </div>
+                    </div>
                 </div>
 
                 <button type="button" class="calculate-btn" onclick="calculate()">
                     <i class="fas fa-chart-bar"></i> Calculate Position
                 </button>
             </form>
-
-            <div class="risk-visualizer">
-                <h3 class="risk-title">
-                    <i class="fas fa-exclamation-triangle"></i> Risk Level
-                </h3>
-                <div class="risk-bar-container">
-                    <div class="risk-bar" id="riskBar"></div>
-                </div>
-                <div class="risk-labels">
-                    <span>Low Risk</span>
-                    <span>Moderate</span>
-                    <span>High Risk</span>
-                </div>
-            </div>
         </div>
 
         <div class="results-card" id="resultsCard">
@@ -669,9 +689,9 @@
                 <div class="result-item">
                     <div class="result-label">
                         <i class="fas fa-tachometer-alt"></i>
-                        <span>Suggested Leverage</span>
+                        <span>Leverage Used</span>
                     </div>
-                    <div class="result-value highlight" id="leverage">0.00x</div>
+                    <div class="result-value highlight" id="leverageUsed">0.00x</div>
                 </div>
 
                 <div class="result-item">
@@ -688,6 +708,28 @@
                         <span>Risk/Reward Ratio</span>
                     </div>
                     <div class="result-value" id="riskReward">0.00</div>
+                </div>
+
+                <div class="leverage-details">
+                    <h4><i class="fas fa-cogs"></i> Leverage Details</h4>
+                    <div class="leverage-stats">
+                        <div class="leverage-stat">
+                            <span>Required Leverage:</span>
+                            <span id="requiredLeverage">0.00x</span>
+                        </div>
+                        <div class="leverage-stat">
+                            <span>Max Leverage:</span>
+                            <span id="maxLeverageDisplay">Unlimited</span>
+                        </div>
+                        <div class="leverage-stat">
+                            <span>Margin Required:</span>
+                            <span id="marginRequired">0.00 USDT</span>
+                        </div>
+                        <div class="leverage-stat">
+                            <span>Position Value:</span>
+                            <span id="positionValue">0.00 USDT</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="profit-loss">
@@ -725,6 +767,7 @@
             document.getElementById('entry').value = 50000;
             document.getElementById('stoploss').value = 49000;
             document.getElementById('takeprofit').value = 52000;
+            document.getElementById('maxLeverage').value = 0;
             
             // Calculate with default values
             calculate();
@@ -735,9 +778,9 @@
             const entry = parseFloat(document.getElementById('entry').value);
             const stoploss = parseFloat(document.getElementById('stoploss').value);
             const takeprofit = parseFloat(document.getElementById('takeprofit').value);
+            const maxLeverageInput = parseFloat(document.getElementById('maxLeverage').value);
             
             const resultsContent = document.getElementById('resultsContent');
-            const riskBar = document.getElementById('riskBar');
             const positionIndicator = document.getElementById('positionIndicator');
             
             // Validation
@@ -756,47 +799,83 @@
                 return;
             }
             
-            let positionType, leverage, positionSize, potentialProfit, riskReward;
+            let positionType, requiredLeverage, leverageUsed, positionSize, potentialProfit, riskReward;
+            let marginRequired, positionValue;
             
+            // Calculate required leverage based on stoploss
             if (takeprofit > entry) {
                 positionType = 'LONG';
                 if (stoploss >= entry) {
                     showError('For a long position, stoploss must be below entry price.');
                     return;
                 }
-                leverage = entry / (entry - stoploss);
-                const margin = risk;
-                positionSize = (margin * leverage) / entry;
-                potentialProfit = positionSize * (takeprofit - entry);
-                riskReward = ((takeprofit - entry) / (entry - stoploss)).toFixed(2);
+                requiredLeverage = entry / (entry - stoploss);
             } else {
                 positionType = 'SHORT';
                 if (stoploss <= entry) {
                     showError('For a short position, stoploss must be above entry price.');
                     return;
                 }
-                leverage = entry / (stoploss - entry);
-                const margin = risk;
-                positionSize = (margin * leverage) / entry;
-                potentialProfit = positionSize * (entry - takeprofit);
-                riskReward = ((entry - takeprofit) / (stoploss - entry)).toFixed(2);
+                requiredLeverage = entry / (stoploss - entry);
             }
+            
+            // Apply max leverage constraint (0 means unlimited)
+            let maxLeverage = maxLeverageInput;
+            if (maxLeverage === 0) {
+                leverageUsed = requiredLeverage;
+            } else {
+                leverageUsed = Math.min(requiredLeverage, maxLeverage);
+            }
+            
+            // Calculate position size based on risk amount and leverage used
+            // Risk = Position Size * |Entry - Stoploss|
+            // So Position Size = Risk / |Entry - Stoploss|
+            const priceDifference = Math.abs(entry - stoploss);
+            positionSize = risk / priceDifference;
+            
+            // Calculate margin required based on position size and leverage used
+            // Position Size = (Margin * Leverage) / Entry
+            // So Margin = (Position Size * Entry) / Leverage
+            marginRequired = (positionSize * entry) / leverageUsed;
+            
+            // Calculate position value
+            positionValue = positionSize * entry;
+            
+            // Calculate potential profit
+            if (positionType === 'LONG') {
+                potentialProfit = positionSize * (takeprofit - entry);
+            } else {
+                potentialProfit = positionSize * (entry - takeprofit);
+            }
+            
+            // Calculate risk/reward ratio
+            riskReward = (potentialProfit / risk).toFixed(2);
             
             // Update UI with results
             document.getElementById('positionSize').textContent = positionSize.toFixed(4) + ' BTC';
-            document.getElementById('leverage').textContent = leverage.toFixed(2) + 'x';
+            document.getElementById('leverageUsed').textContent = leverageUsed.toFixed(2) + 'x';
+            
+            // Highlight if leverage is limited by maxLeverage
+            if (maxLeverage > 0 && leverageUsed < requiredLeverage) {
+                document.getElementById('leverageUsed').classList.add('warning');
+            } else {
+                document.getElementById('leverageUsed').classList.remove('warning');
+            }
+            
             document.getElementById('liquidationPrice').textContent = stoploss.toFixed(2) + ' USDT';
             document.getElementById('riskReward').textContent = riskReward;
             document.getElementById('potentialLoss').textContent = risk.toFixed(2) + ' USDT';
             document.getElementById('potentialProfit').textContent = potentialProfit.toFixed(2) + ' USDT';
             
+            // Update leverage details
+            document.getElementById('requiredLeverage').textContent = requiredLeverage.toFixed(2) + 'x';
+            document.getElementById('maxLeverageDisplay').textContent = maxLeverage === 0 ? 'Unlimited' : maxLeverage.toFixed(0) + 'x';
+            document.getElementById('marginRequired').textContent = marginRequired.toFixed(2) + ' USDT';
+            document.getElementById('positionValue').textContent = positionValue.toFixed(2) + ' USDT';
+            
             // Update position indicator
             positionIndicator.textContent = positionType;
             positionIndicator.className = `position-indicator ${positionType.toLowerCase()}`;
-            
-            // Calculate risk level (simplified based on leverage)
-            let riskLevel = Math.min(100, leverage * 10);
-            riskBar.style.width = riskLevel + '%';
             
             // Animate results
             resultsContent.classList.remove('fade-in');
@@ -821,7 +900,7 @@
             resultsContent.classList.add('fade-in');
         }
         
-        // Theme toggle functionality (optional light mode)
+        // Theme toggle functionality
         document.getElementById('themeToggle').addEventListener('click', function() {
             const icon = this.querySelector('i');
             
