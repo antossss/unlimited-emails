@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forex & Indices Position Size Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .calculator-body {
+            padding: 40px 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 42px;
+            color: #764ba2;
+            font-size: 18px;
+            z-index: 1;
+        }
+
+        .input-group select,
+        .input-group input {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-group select:focus,
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        #priceGroup {
+            display: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%);
+            border-radius: 12px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #006064;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #00bcd4;
+            transition: all 0.3s ease;
+        }
+
+        .info {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+            }
+            .calculator-body {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Position Size Calculator</h1>
+            <p>For Forex Majors & US100 Index</p>
+        </div>
+        
+        <div class="calculator-body">
+            <form id="calcForm">
+                <div class="input-group">
+                    <label for="instrument">Instrument</label>
+                    <i class="fas fa-chart-bar"></i>
+                    <select id="instrument" required></select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="risk">Desired Risk Amount ($)</label>
+                    <i class="fas fa-dollar-sign"></i>
+                    <input type="number" id="risk" placeholder="e.g., 200" step="0.01" required>
+                </div>
+                
+                <div class="input-group">
+                    <label id="distanceLabel">Stop-Loss Distance</label>
+                    <i class="fas fa-chart-line"></i>
+                    <input type="number" id="distance" placeholder="e.g., 40" step="0.1" required>
+                </div>
+                
+                <div class="input-group" id="priceGroup">
+                    <label for="price">Current Price (required for this pair)</label>
+                    <i class="fas fa-exchange-alt"></i>
+                    <input type="number" id="price" placeholder="e.g., 150.00" step="0.00001">
+                </div>
+                
+                <button type="submit">
+                    <i class="fas fa-calculator"></i> Calculate Lot Size
+                </button>
+            </form>
+            
+            <div id="result">
+                Select an instrument and enter values to calculate
+            </div>
+            
+            <div class="info">
+                Based on standard CFD/Forex specs (1 lot = 100,000 units for forex).<br>
+                $10 per pip/point per lot for USD-quote pairs & US100.<br>
+                For USD-base pairs, pip value calculated from current price.<br>
+                Always verify exact contract details with your broker.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const instruments = [
+            { value: "US100", text: "US100 (NAS100)", unit: "points", valuePerLot: 10, needsPrice: false },
+            { value: "EURUSD", text: "EUR/USD", unit: "pips", valuePerLot: 10, needsPrice: false },
+            { value: "GBPUSD", text: "GBP/USD", unit: "pips", valuePerLot: 10, needsPrice: false },
+            { value: "AUDUSD", text: "AUD/USD", unit: "pips", valuePerLot: 10, needsPrice: false },
+            { value: "NZDUSD", text: "NZD/USD", unit: "pips", valuePerLot: 10, needsPrice: false },
+            { value: "USDCAD", text: "USD/CAD", unit: "pips", pipSize: 0.0001, needsPrice: true },
+            { value: "USDCHF", text: "USD/CHF", unit: "pips", pipSize: 0.0001, needsPrice: true },
+            { value: "USDJPY", text: "USD/JPY", unit: "pips", pipSize: 0.01, needsPrice: true }
+        ];
+
+        const select = document.getElementById('instrument');
+        const distanceLabel = document.getElementById('distanceLabel');
+        const priceGroup = document.getElementById('priceGroup');
+        const priceInput = document.getElementById('price');
+        const resultDiv = document.getElementById('result');
+
+        // Populate dropdown
+        instruments.forEach(inst => {
+            const option = document.createElement('option');
+            option.value = inst.value;
+            option.textContent = inst.text;
+            select.appendChild(option);
+        });
+
+        // Default to US100
+        select.value = "US100";
+        updateFields();
+
+        select.addEventListener('change', updateFields);
+
+        function updateFields() {
+            const selected = instruments.find(i => i.value === select.value);
+            distanceLabel.textContent = `Stop-Loss Distance (${selected.unit})`;
+            document.getElementById('distance').placeholder = `e.g., ${selected.unit === 'points' ? '40' : '50'}`;
+
+            if (selected.needsPrice) {
+                priceGroup.style.display = 'block';
+                priceInput.required = true;
+            } else {
+                priceGroup.style.display = 'none';
+                priceInput.required = false;
+                priceInput.value = '';
+            }
+        }
+
+        document.getElementById('calcForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const risk = parseFloat(document.getElementById('risk').value);
+            const distance = parseFloat(document.getElementById('distance').value);
+            const selectedInst = instruments.find(i => i.value === select.value);
+            const instrumentName = selectedInst.text;
+            const unit = selectedInst.unit;
+
+            if (isNaN(risk) || isNaN(distance) || risk <= 0 || distance <= 0) {
+                showError('Please enter valid positive numbers for risk and distance.');
+                return;
+            }
+
+            let valuePerUnitPerLot;
+
+            if (selectedInst.needsPrice) {
+                const price = parseFloat(priceInput.value);
+                if (isNaN(price) || price <= 0) {
+                    showError('Please enter a valid current price for this pair.');
+                    return;
+                }
+                valuePerUnitPerLot = (selectedInst.pipSize / price) * 100000;
+            } else {
+                valuePerUnitPerLot = selectedInst.valuePerLot;
+            }
+
+            const lotSize = risk / (distance * valuePerUnitPerLot);
+
+            resultDiv.innerHTML = `
+                <div>
+                    <div style="font-size:16px; color:#006064; margin-bottom:8px;">${instrumentName}</div>
+                    <div style="font-size:14px; color:#006064; margin-bottom:12px;">
+                        ~$${valuePerUnitPerLot.toFixed(2)} per ${unit.slice(0, -1)} per lot
+                    </div>
+                    <div style="font-size:32px; font-weight:700; color:#006064;">${lotSize.toFixed(2)} lots</div>
+                    <div style="font-size:14px; color:#006064; margin-top:8px;">
+                        Risks $${(lotSize * distance * valuePerUnitPerLot).toFixed(2)} on ${distance} ${unit}
+                    </div>
+                </div>
+            `;
+            resultDiv.style.background = 'linear-gradient(135deg, #c8e6c9 0%, #e8f5e8 100%)';
+            resultDiv.style.borderColor = '#4caf50';
+        });
+
+        function showError(message) {
+            resultDiv.innerHTML = `<span style="color:#d32f2f;">${message}</span>`;
+            resultDiv.style.background = '#ffebee';
+            resultDiv.style.borderColor = '#f44336';
+        }
+    </script>
+</body>
+</html>
