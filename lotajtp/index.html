@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Calculator Lotaj &amp; TP</title>
+<style>
+  :root{
+    --bg:#0A0D12;
+    --surface:#141A22;
+    --surface-2:#0F141B;
+    --border:#232B36;
+    --border-soft:#1B222B;
+    --text:#EEF2F6;
+    --muted:#8791A0;
+    --amber:#F0AE5C;
+    --red:#E17A70;
+    --red-soft:rgba(225,122,112,0.10);
+    --green:#6FCF9A;
+    --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "Consolas", "Liberation Mono", monospace;
+    --sans: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --radius: 16px;
+    --radius-sm: 11px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.45;
+    padding-bottom:48px;
+  }
+  .wrap{max-width:600px;margin:0 auto;padding:0 16px;}
+
+  header{padding:20px 4px 16px;}
+  header h1{
+    font-size:20px;
+    font-weight:700;
+    margin:0 0 5px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    color:var(--muted);
+    font-size:13px;
+    margin:0;
+    max-width:52ch;
+  }
+
+  .sticky-result{
+    position:sticky;
+    top:0;
+    z-index:20;
+    margin:0 -16px 16px;
+    padding:14px 16px 16px;
+    background:rgba(10,13,18,0.86);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .sticky-result::before{
+    content:"";
+    display:block;
+    height:2px;
+    margin:0 0 14px;
+    background:linear-gradient(90deg, transparent, var(--amber), transparent);
+    opacity:0.7;
+  }
+  .result-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+  }
+  .r-item{
+    background:var(--surface);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-sm);
+    padding:10px 8px;
+    text-align:center;
+  }
+  .r-item .k{font-size:9.5px;color:var(--muted);letter-spacing:0.03em;margin-bottom:4px;}
+  .r-item .v{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--amber);word-break:break-word;}
+  .r-item .v.green{color:var(--green);}
+  @media (max-width:380px){
+    .r-item .v{font-size:15px;}
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius);
+    padding:18px 16px 20px;
+    margin-bottom:12px;
+  }
+  .panel.primary{
+    border-color:var(--amber);
+    box-shadow:0 0 0 1px rgba(240,174,92,0.08);
+  }
+  .panel h2{
+    font-size:12px;
+    font-weight:700;
+    color:var(--muted);
+    margin:0 0 14px;
+    letter-spacing:0.01em;
+  }
+
+  .segmented{
+    display:flex;
+    gap:6px;
+    background:var(--surface-2);
+    padding:4px;
+    border-radius:var(--radius-sm);
+  }
+  .segmented button{
+    flex:1;
+    border:none;
+    background:transparent;
+    color:var(--muted);
+    padding:10px 8px;
+    font-family:var(--sans);
+    font-size:13.5px;
+    font-weight:600;
+    border-radius:8px;
+    cursor:pointer;
+    min-height:44px;
+  }
+  .segmented button.active{
+    background:var(--amber);
+    color:#20150A;
+  }
+  .segmented button:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+
+  .quick-row{margin-top:14px;}
+
+  .field{margin-top:0;}
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-family:var(--mono);
+    font-size:16px;
+    padding:12px 12px;
+    border-radius:var(--radius-sm);
+  }
+  .field input:focus{outline:none;border-color:var(--amber);}
+  .field.big input{font-size:24px;font-weight:700;padding:14px 14px;}
+  .field .unit{color:var(--muted);font-size:11.5px;margin-top:5px;}
+
+  .grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:14px;
+  }
+  .grid2 .field:first-child{grid-column:1 / -1;}
+  @media (max-width:380px){.grid2{grid-template-columns:1fr;} .grid2 .field{grid-column:auto;}}
+
+  .row-check{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    margin-top:14px;
+    font-size:13px;
+    color:var(--text);
+    cursor:pointer;
+  }
+  .row-check input{margin-top:3px;width:17px;height:17px;flex-shrink:0;accent-color:var(--amber);}
+  .row-check .desc{color:var(--muted);font-size:11.5px;margin-top:3px;}
+
+  .detail-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .detail-table tr{border-bottom:1px solid var(--border-soft);}
+  .detail-table tr:last-child{border-bottom:none;}
+  .detail-table td{padding:9px 2px;}
+  .detail-table td:first-child{color:var(--muted);padding-right:10px;}
+  .detail-table td:last-child{
+    text-align:right;
+    font-family:var(--mono);
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .detail-table td.risk{color:var(--red);}
+  .detail-table td.reward{color:var(--green);}
+
+  .warn{
+    background:var(--red-soft);
+    border:1px solid var(--red);
+    color:var(--red);
+    padding:11px 13px;
+    font-size:12.5px;
+    border-radius:var(--radius-sm);
+    margin-top:12px;
+  }
+
+  .advanced-toggle{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    padding:12px;
+    border-radius:var(--radius-sm);
+    margin-bottom:12px;
+    text-align:left;
+  }
+  .advanced-toggle:active{border-color:var(--amber);}
+  .advanced-body{display:none;}
+  .advanced-body.open{display:block;}
+
+  .btn-row{display:flex;gap:10px;margin-top:4px;}
+  .btn{
+    flex:1;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:12px 14px;
+    font-family:var(--sans);
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    border-radius:var(--radius-sm);
+    min-height:44px;
+  }
+  .btn:active{border-color:var(--amber);}
+
+  textarea#copyArea{
+    width:100%;
+    margin-top:10px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:12px;
+    padding:10px;
+    height:120px;
+    display:none;
+    border-radius:var(--radius-sm);
+  }
+
+  footer{color:var(--muted);font-size:11px;margin-top:18px;padding:0 4px;max-width:60ch;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Calculator Lotaj &amp; Take Profit</h1>
+    <p>UK100, DAX, GBPUSD pe cont prop firm. Scrii distanta de SL de pe TradingView, restul iese automat.</p>
+  </header>
+
+  <div class="sticky-result">
+    <div class="result-grid">
+      <div class="r-item">
+        <div class="k">LOTURI</div>
+        <div class="v" id="outLots">-</div>
+      </div>
+      <div class="r-item">
+        <div class="k">DISTANTA TP</div>
+        <div class="v" id="outTpDistance">-</div>
+      </div>
+      <div class="r-item">
+        <div class="k">PROFIT MT5</div>
+        <div class="v green" id="outNetProfit">-</div>
+      </div>
+    </div>
+    <div id="warnBox"></div>
+  </div>
+
+  <div class="panel primary">
+    <h2>Instrument</h2>
+    <div class="segmented" id="instrumentTabs">
+      <button class="active" data-instrument="uk100">UK100</button>
+      <button data-instrument="dax">DAX</button>
+      <button data-instrument="gbpusd">GBPUSD</button>
+    </div>
+
+    <div class="quick-row">
+      <div class="field big">
+        <label for="slDistance">Distanta Stop Loss</label>
+        <input type="number" id="slDistance" step="any" value="10" inputmode="decimal">
+        <div class="unit" id="unitHint">puncte</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Parametri risc</h2>
+    <div class="grid2">
+      <div class="field">
+        <label for="riskUsd">Risc dorit (USD)</label>
+        <input type="number" id="riskUsd" step="any" value="250" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label for="rrRatio">Risk:Reward</label>
+        <input type="number" id="rrRatio" step="any" value="2" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label for="commission">Comision / lot ($)</label>
+        <input type="number" id="commission" step="any" value="3" inputmode="decimal">
+      </div>
+    </div>
+
+    <label class="row-check">
+      <input type="checkbox" id="bothSides">
+      <span>Comisionul se percepe pe ambele laturi (deschidere + inchidere)</span>
+    </label>
+  </div>
+
+  <button class="advanced-toggle" id="advToggle">setari avansate ▾</button>
+  <div class="advanced-body" id="advBody">
+    <div class="panel">
+      <label class="row-check">
+        <input type="checkbox" id="includeComm" checked>
+        <span>
+          Riscul dorit include comisionul (suma din campul de mai sus e pierderea maxima totala)
+          <div class="desc">Debifat: suma devine riscul de piata pur, comisionul se aduna separat peste, ca sa vezi overshoot-ul.</div>
+        </span>
+      </label>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="entryPrice">Pret intrare (optional)</label>
+          <input type="number" id="entryPrice" step="any" placeholder="las gol pt. doar distanta" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="factorValue">$ per punct/pip per lot</label>
+          <input type="number" id="factorValue" step="any" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="lotStep">Pas lot minim</label>
+          <input type="number" id="lotStep" step="any" value="0.01" inputmode="decimal">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="detailPanel">
+    <h2>Detalii calcul</h2>
+    <table class="detail-table" id="detailTable"></table>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" id="copyBtn">Copiaza rezumat</button>
+    <button class="btn" id="resetBtn">Reseteaza</button>
+  </div>
+  <textarea id="copyArea" readonly></textarea>
+
+  <footer>
+    Valorile per punct/pip vin din exemplele tale (UK100: 1.3367, DAX: 1.1483, GBPUSD: 10 fix). La indici valoarea depinde si de cursul de conversie al broker-ului, verific-o din cand in cand fata de un trade real. Lotul e mereu rotunjit in jos, ca riscul real sa nu depaseasca niciodata riscul dorit. Nu e sfat financiar.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const defaults = {
+    uk100:  { factor: 1.3367, point: 1,      label: 'puncte', priceDecimals: 2 },
+    dax:    { factor: 1.1483, point: 1,      label: 'puncte', priceDecimals: 2 },
+    gbpusd: { factor: 10,     point: 0.0001, label: 'pips',   priceDecimals: 5 }
+  };
+
+  let state = { instrument: 'uk100' };
+
+  const $ = id => document.getElementById(id);
+  const distEl = $('slDistance'), riskEl = $('riskUsd'),
+        rrEl = $('rrRatio'), commEl = $('commission'),
+        bothSidesEl = $('bothSides'), includeCommEl = $('includeComm'),
+        entryEl = $('entryPrice'), factorEl = $('factorValue'), lotStepEl = $('lotStep');
+
+  function fmtMoney(n){
+    if (!isFinite(n)) return '-';
+    const sign = n < 0 ? '-' : '';
+    return sign + '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function fmtPrice(n, decimals){
+    if (!isFinite(n)) return '-';
+    return n.toLocaleString('en-US', {minimumFractionDigits:decimals, maximumFractionDigits:decimals});
+  }
+  function fmtNum(n, decimals){
+    if (!isFinite(n)) return '-';
+    return n.toLocaleString('en-US', {minimumFractionDigits:decimals, maximumFractionDigits:decimals});
+  }
+
+  document.querySelectorAll('#instrumentTabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#instrumentTabs button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.instrument = btn.dataset.instrument;
+      factorEl.value = defaults[state.instrument].factor;
+      $('unitHint').textContent = defaults[state.instrument].label;
+      recalc();
+    });
+  });
+
+  $('advToggle').addEventListener('click', ()=>{
+    $('advBody').classList.toggle('open');
+  });
+
+  factorEl.value = defaults[state.instrument].factor;
+
+  [distEl, riskEl, rrEl, commEl, entryEl, factorEl, lotStepEl].forEach(el=>{
+    el.addEventListener('input', recalc);
+  });
+  [bothSidesEl, includeCommEl].forEach(el=>{
+    el.addEventListener('change', recalc);
+  });
+
+  function setDetailRow(table, rows){
+    table.innerHTML = rows.map(r=>{
+      const cls = r.cls ? ' class="'+r.cls+'"' : '';
+      return '<tr><td>'+r.k+'</td><td'+cls+'>'+r.v+'</td></tr>';
+    }).join('');
+  }
+
+  function recalc(){
+    const conf = defaults[state.instrument];
+    const distancePts = parseFloat(distEl.value);
+    const riskUsd = parseFloat(riskEl.value);
+    const rr = parseFloat(rrEl.value);
+    const commissionPerLot = parseFloat(commEl.value);
+    const factor = parseFloat(factorEl.value);
+    const lotStep = parseFloat(lotStepEl.value) || 0.01;
+    const entry = parseFloat(entryEl.value);
+    const hasEntry = !isNaN(entry);
+    const bothSides = bothSidesEl.checked;
+    const includeComm = includeCommEl.checked;
+
+    const warnBox = $('warnBox');
+    warnBox.innerHTML = '';
+
+    if ([distancePts, riskUsd, rr, commissionPerLot, factor].some(v => isNaN(v)) || distancePts <= 0) {
+      $('outLots').textContent = '-';
+      $('outTpDistance').textContent = '-';
+      $('outNetProfit').textContent = '-';
+      setDetailRow($('detailTable'), [{k:'Status', v:'Completeaza distanta SL (mai mare ca 0).'}]);
+      return;
+    }
+
+    if (riskUsd <= 0 || factor <= 0 || rr <= 0 || lotStep <= 0 || commissionPerLot < 0) {
+      setDetailRow($('detailTable'), [{k:'Eroare', v:'Riscul, factorul, RR si pasul de lot trebuie sa fie pozitive.'}]);
+      return;
+    }
+
+    const commMultiplier = bothSides ? 2 : 1;
+
+    let rawLots;
+    if (includeComm) {
+      const denom = factor * distancePts + commissionPerLot * commMultiplier;
+      rawLots = riskUsd / denom;
+    } else {
+      rawLots = riskUsd / (factor * distancePts);
+    }
+
+    let lots = Math.floor((rawLots / lotStep) + 1e-9) * lotStep;
+    lots = Math.round(lots * 1e6) / 1e6;
+
+    let minLotExceeds = false;
+    if (lots < lotStep) {
+      minLotExceeds = true;
+      lots = lotStep;
+    }
+
+    const marketRisk = lots * factor * distancePts;
+    const commissionTotal = lots * commissionPerLot * commMultiplier;
+    const totalRisk = marketRisk + commissionTotal;
+    const referenceRisk = includeComm ? riskUsd : marketRisk;
+
+    const netProfitTarget = rr * referenceRisk;
+    const grossProfitNeeded = netProfitTarget + commissionTotal;
+    const tpDistancePts = grossProfitNeeded / (lots * factor);
+    const realRR = totalRisk > 0 ? netProfitTarget / totalRisk : NaN;
+
+    $('outLots').textContent = fmtNum(lots, 2);
+    $('outTpDistance').textContent = fmtNum(tpDistancePts, 1) + ' ' + conf.label;
+    $('outNetProfit').textContent = fmtMoney(grossProfitNeeded);
+
+    if (minLotExceeds) {
+      warnBox.innerHTML = '<div class="warn">Chiar si lotul minim (' + fmtNum(lotStep,2) + ') genereaza un risc de ' + fmtMoney(totalRisk) + ', peste riscul dorit de ' + fmtMoney(riskUsd) + '. SL e prea larg pentru riscul setat.</div>';
+    } else if (!includeComm) {
+      const overshoot = totalRisk - riskUsd;
+      warnBox.innerHTML = '<div class="warn">Mod "risc pur de piata": riscul real total e ' + fmtMoney(totalRisk) + ', adica ' + fmtMoney(overshoot) + ' peste cei ' + fmtMoney(riskUsd) + ' introdusi, din cauza comisionului.</div>';
+    }
+
+    const detailRows = [
+      {k:'Distanta SL', v: fmtNum(distancePts, 1) + ' ' + conf.label},
+      {k:'Distanta TP', v: fmtNum(tpDistancePts, 1) + ' ' + conf.label},
+      {k:'Risc de piata (fara comision)', v: fmtMoney(marketRisk), cls:'risk'},
+      {k:'Comision total (' + (bothSides ? '2 laturi' : '1 latura') + ')', v: fmtMoney(commissionTotal), cls:'risk'},
+      {k:'Risc real total', v: fmtMoney(totalRisk), cls:'risk'},
+      {k:'Profit brut la TP (P/L pret in MT5)', v: fmtMoney(grossProfitNeeded), cls:'reward'},
+      {k:'Profit net dupa comision', v: fmtMoney(netProfitTarget), cls:'reward'},
+      {k:'RR real (net / risc real)', v: '1 : ' + fmtNum(realRR, 2)}
+    ];
+
+    if (hasEntry) {
+      const distancePrice = distancePts * conf.point;
+      const tpDistancePrice = tpDistancePts * conf.point;
+      const slLong = entry - distancePrice, tpLong = entry + tpDistancePrice;
+      const slShort = entry + distancePrice, tpShort = entry - tpDistancePrice;
+      detailRows.splice(2, 0,
+        {k:'Pret SL / TP daca esti Long', v: fmtPrice(slLong, conf.priceDecimals) + ' / ' + fmtPrice(tpLong, conf.priceDecimals)},
+        {k:'Pret SL / TP daca esti Short', v: fmtPrice(slShort, conf.priceDecimals) + ' / ' + fmtPrice(tpShort, conf.priceDecimals)}
+      );
+    }
+
+    setDetailRow($('detailTable'), detailRows);
+  }
+
+  $('copyBtn').addEventListener('click', ()=>{
+    const area = $('copyArea');
+    const rows = Array.from(document.querySelectorAll('#detailTable tr')).map(tr=>{
+      const tds = tr.querySelectorAll('td');
+      return tds[0].textContent + ': ' + tds[1].textContent;
+    }).join('\n');
+    const summary = 'Instrument: ' + state.instrument.toUpperCase() +
+      '\nLoturi: ' + $('outLots').textContent +
+      '\nDistanta TP: ' + $('outTpDistance').textContent +
+      '\nProfit net tinta: ' + $('outNetProfit').textContent +
+      '\n\n' + rows;
+    area.value = summary;
+    area.style.display = 'block';
+    area.focus();
+    area.select();
+    try {
+      document.execCommand('copy');
+      $('copyBtn').textContent = 'Copiat!';
+    } catch(e) {
+      $('copyBtn').textContent = 'Selecteaza manual';
+    }
+    setTimeout(()=>{ $('copyBtn').textContent = 'Copiaza rezumat'; }, 2000);
+  });
+
+  $('resetBtn').addEventListener('click', ()=>{
+    distEl.value = 10;
+    riskEl.value = 250;
+    rrEl.value = 2;
+    commEl.value = 3;
+    entryEl.value = '';
+    bothSidesEl.checked = false;
+    includeCommEl.checked = true;
+    lotStepEl.value = 0.01;
+    document.querySelectorAll('#instrumentTabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelector('[data-instrument="uk100"]').classList.add('active');
+    state.instrument = 'uk100';
+    factorEl.value = defaults.uk100.factor;
+    $('unitHint').textContent = defaults.uk100.label;
+    $('copyArea').style.display = 'none';
+    recalc();
+  });
+
+  recalc();
+})();
+</script>
+</body>
+</html>
