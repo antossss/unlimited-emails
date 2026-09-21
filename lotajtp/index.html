@@ -285,7 +285,7 @@
     <div class="quick-row">
       <div class="field big">
         <label for="slDistance">Distanta Stop Loss</label>
-        <input type="number" id="slDistance" step="any" value="10" inputmode="decimal">
+        <input type="text" id="slDistance" value="10" inputmode="decimal">
         <div class="unit" id="unitHint">puncte</div>
       </div>
     </div>
@@ -296,15 +296,15 @@
     <div class="grid2">
       <div class="field">
         <label for="riskUsd">Risc dorit (USD)</label>
-        <input type="number" id="riskUsd" step="any" value="250" inputmode="decimal">
+        <input type="text" id="riskUsd" value="250" inputmode="decimal">
       </div>
       <div class="field">
         <label for="rrRatio">Risk:Reward</label>
-        <input type="number" id="rrRatio" step="any" value="2" inputmode="decimal">
+        <input type="text" id="rrRatio" value="2" inputmode="decimal">
       </div>
       <div class="field">
         <label for="commission">Comision / lot ($)</label>
-        <input type="number" id="commission" step="any" value="3" inputmode="decimal">
+        <input type="text" id="commission" value="3" inputmode="decimal">
       </div>
     </div>
 
@@ -328,16 +328,21 @@
       <div class="grid2">
         <div class="field">
           <label for="entryPrice">Pret intrare (optional)</label>
-          <input type="number" id="entryPrice" step="any" placeholder="las gol pt. doar distanta" inputmode="decimal">
+          <input type="text" id="entryPrice" placeholder="las gol pt. doar distanta" inputmode="decimal">
         </div>
         <div class="field">
           <label for="factorValue">$ per punct/pip per lot</label>
-          <input type="number" id="factorValue" step="any" inputmode="decimal">
+          <input type="text" id="factorValue" inputmode="decimal">
         </div>
         <div class="field">
           <label for="lotStep">Pas lot minim</label>
-          <input type="number" id="lotStep" step="any" value="0.01" inputmode="decimal">
+          <input type="text" id="lotStep" value="0.01" inputmode="decimal">
         </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="saveSettingsBtn">Salveaza setari</button>
+        <button class="btn" id="resetSettingsBtn">Reseteaza setari</button>
       </div>
     </div>
   </div>
@@ -369,7 +374,60 @@
 
   let state = { instrument: 'uk100' };
 
+  const SETTINGS_KEY = 'lotajTpCalculatorSettings';
+
   const $ = id => document.getElementById(id);
+
+  function loadSavedSettings(){
+    try {
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+      if (!saved) return;
+
+      if (saved.riskUsd !== undefined) riskEl.value = saved.riskUsd;
+      if (saved.rrRatio !== undefined) rrEl.value = saved.rrRatio;
+      if (saved.commission !== undefined) commEl.value = saved.commission;
+    } catch(e) {
+      // Ignoră valorile salvate corupte și păstrează valorile implicite.
+    }
+  }
+
+  function saveSettings(){
+    const settings = {
+      riskUsd: riskEl.value,
+      rrRatio: rrEl.value,
+      commission: commEl.value
+    };
+
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      $('saveSettingsBtn').textContent = 'Setari salvate!';
+      setTimeout(() => {
+        $('saveSettingsBtn').textContent = 'Salveaza setari';
+      }, 1800);
+    } catch(e) {
+      $('saveSettingsBtn').textContent = 'Eroare la salvare';
+      setTimeout(() => {
+        $('saveSettingsBtn').textContent = 'Salveaza setari';
+      }, 1800);
+    }
+  }
+
+  function resetSavedSettings(){
+    riskEl.value = 250;
+    rrEl.value = 2;
+    commEl.value = 3;
+
+    try {
+      localStorage.removeItem(SETTINGS_KEY);
+    } catch(e) {}
+
+    recalc();
+
+    $('resetSettingsBtn').textContent = 'Setari resetate!';
+    setTimeout(() => {
+      $('resetSettingsBtn').textContent = 'Reseteaza setari';
+    }, 1800);
+  }
   const distEl = $('slDistance'), riskEl = $('riskUsd'),
         rrEl = $('rrRatio'), commEl = $('commission'),
         bothSidesEl = $('bothSides'), includeCommEl = $('includeComm'),
@@ -406,6 +464,11 @@
 
   factorEl.value = defaults[state.instrument].factor;
 
+  $('saveSettingsBtn').addEventListener('click', saveSettings);
+  $('resetSettingsBtn').addEventListener('click', resetSavedSettings);
+
+  loadSavedSettings();
+
   [distEl, riskEl, rrEl, commEl, entryEl, factorEl, lotStepEl].forEach(el=>{
     el.addEventListener('input', recalc);
   });
@@ -420,15 +483,21 @@
     }).join('');
   }
 
+  function parseNum(val){
+    if (val == null || val === '') return NaN;
+    const cleaned = String(val).trim().replace(',', '.');
+    return parseFloat(cleaned);
+  }
+
   function recalc(){
     const conf = defaults[state.instrument];
-    const distancePts = parseFloat(distEl.value);
-    const riskUsd = parseFloat(riskEl.value);
-    const rr = parseFloat(rrEl.value);
-    const commissionPerLot = parseFloat(commEl.value);
-    const factor = parseFloat(factorEl.value);
-    const lotStep = parseFloat(lotStepEl.value) || 0.01;
-    const entry = parseFloat(entryEl.value);
+    const distancePts = parseNum(distEl.value);
+    const riskUsd = parseNum(riskEl.value);
+    const rr = parseNum(rrEl.value);
+    const commissionPerLot = parseNum(commEl.value);
+    const factor = parseNum(factorEl.value);
+    const lotStep = parseNum(lotStepEl.value) || 0.01;
+    const entry = parseNum(entryEl.value);
     const hasEntry = !isNaN(entry);
     const bothSides = bothSidesEl.checked;
     const includeComm = includeCommEl.checked;
